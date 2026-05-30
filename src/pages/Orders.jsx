@@ -13,7 +13,7 @@ function Orders() {
         try {
 
             const res = await axios.get(
-                "http://localhost:5000/api/orders"
+                `${import.meta.env.VITE_API_URL}/api/orders`
             );
 
             setOrders(res.data);
@@ -40,7 +40,7 @@ function Orders() {
         try {
 
             await axios.put(
-                `http://localhost:5000/api/orders/status/${id}`,
+                `${import.meta.env.VITE_API_URL}/api/orders/status/${id}`,
                 {
                     orderStatus: status,
                 }

@@ -22,6 +22,12 @@ function Products() {
             unit: "",
 
         });
+    const [uploading, setUploading] =
+        useState(false);
+
+    const API_URL =
+        import.meta.env.VITE_API_URL;
+
 
     // FETCH PRODUCTS
 
@@ -30,8 +36,9 @@ function Products() {
         try {
 
             const res = await axios.get(
-                `${import.meta.env.VITE_API_URL}/api/products`
+                `${API_URL}/api/products`
             );
+
 
             setProducts(res.data);
 
@@ -62,6 +69,51 @@ function Products() {
     };
 
     // ADD PRODUCT
+    const uploadImage = async (file) => {
+
+        if (!file) return;
+
+        try {
+
+            setUploading(true);
+
+            const data = new FormData();
+
+            data.append(
+                "file",
+                file
+            );
+
+            data.append(
+                "upload_preset",
+                "grocerymart"
+            );
+
+            const res =
+                await axios.post(
+                    "https://api.cloudinary.com/v1_1/dfg43t2kb/image/upload",
+                    data
+                );
+
+            setFormData((prev) => ({
+                ...prev,
+                image:
+                    res.data.secure_url,
+            }));
+
+        } catch (error) {
+
+            console.log(error);
+
+            alert(
+                "Image upload failed"
+            );
+
+        } finally {
+
+            setUploading(false);
+        }
+    };
 
     const addProduct = async (e) => {
 
@@ -70,8 +122,12 @@ function Products() {
         try {
 
             await axios.post(
-                `${import.meta.env.VITE_API_URL}/api/products`,
+                `${API_URL}/api/products`,
                 formData
+            );
+
+            alert(
+                "Product Added Successfully"
             );
 
             resetForm();
@@ -81,6 +137,10 @@ function Products() {
         } catch (error) {
 
             console.log(error);
+
+            alert(
+                "Failed to add product"
+            );
         }
     };
 
@@ -91,7 +151,7 @@ function Products() {
         try {
 
             await axios.delete(
-                `${import.meta.env.VITE_API_URL}/api/products/${id}`
+                `${API_URL}/api/products/${id}`
             );
 
             fetchProducts();
@@ -130,7 +190,7 @@ function Products() {
         try {
 
             await axios.put(
-                `${import.meta.env.VITE_API_URL}/api/products/${editingId}`,
+                `${API_URL}/api/products/${editingId}`,
                 formData
             );
 
@@ -236,15 +296,38 @@ function Products() {
                         required
                     />
 
-                    <input
-                        type="text"
-                        name="image"
-                        placeholder="Image URL"
-                        value={formData.image}
-                        onChange={handleChange}
-                        className="border p-4 rounded-2xl"
-                        required
-                    />
+                    <div>
+
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) =>
+                                uploadImage(
+                                    e.target.files[0]
+                                )
+                            }
+                            className="border p-4 rounded-2xl w-full"
+                        />
+
+                        {uploading && (
+
+                            <p className="text-blue-600 mt-2">
+                                Uploading image...
+                            </p>
+
+                        )}
+
+                        {formData.image && (
+
+                            <img
+                                src={formData.image}
+                                alt="Preview"
+                                className="h-32 mt-3 rounded-xl"
+                            />
+
+                        )}
+
+                    </div>
 
                     <textarea
                         rows="4"
